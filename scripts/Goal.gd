@@ -13,5 +13,5 @@ func _body_entered(body: Node2D):
 	
 	# If body is player
 	if body.is_in_group("player"):
-		# Load the scene by path, and respawn players
+		# Load the scene by path, and respawn player
 		MPIO.mpc.load_scene(scene_to_load, true)
