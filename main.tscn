@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=3 uid="uid://6pxywguedebm"]
+[gd_scene load_steps=5 format=3 uid="uid://6pxywguedebm"]
 
 [ext_resource type="Script" path="res://addons/MultiplayCore/MultiPlay.gd" id="1_d0nm5"]
 [ext_resource type="PackedScene" uid="uid://bh3eicxcruiih" path="res://scenes/player.tscn" id="2_bkr1f"]
 [ext_resource type="PackedScene" uid="uid://ca6vuiof6mwa" path="res://scenes/levels/level_1.tscn" id="3_5d7qw"]
+[ext_resource type="Script" path="res://addons/MultiplayCore/net_protocols/WebSocketNetProtocol.gd" id="4_wm2hd"]
 
 [node name="Main" type="Node2D"]
 texture_filter = 1
@@ -12,3 +13,6 @@ script = ExtResource("1_d0nm5")
 player_scene = ExtResource("2_bkr1f")
 first_scene = ExtResource("3_5d7qw")
 swap_input_action = "swap"
+
+[node name="WebSocketNetProtocol" type="Node" parent="MultiPlayCore"]
+script = ExtResource("4_wm2hd")

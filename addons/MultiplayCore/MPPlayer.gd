@@ -8,24 +8,26 @@ class_name MPPlayer
 @export var ping_ms: int
 ## Handshake data
 @export var handshake_data = {}
+## Authentication Data
+var auth_data = {}
 ## ID of the player
-@export var player_id = 0
+@export var player_id: int = 0
 ## Get MultiPlayCore
 var mpc: MultiPlayCore
 ## The player node created from the template, see [member MultiPlayCore.player_scene]
 var player_node: Node
 ## Determines if this player is local
-var is_local = false
+var is_local: bool = false
 ## Determines if this player network is ready
-var is_ready = false
+var is_ready: bool = false
 ## Determines the player index, not to be confused with player_id.
-var player_index = 0
+var player_index: int = 0
 var _internal_peer: MultiplayerPeer
 var _initcount = 20
 ## Determines if swap is focusing this player, Swap mode only.
-var is_swap_focused = false
+var is_swap_focused: bool = false
 ## The resource path of the template player.
-var player_node_resource_path = ""
+var player_node_resource_path: String = ""
 
 var _local_got_handshake = false
 
@@ -51,8 +53,6 @@ func _ready():
 	if mpc.mode == mpc.PlayMode.Swap and mpc.current_swap_index == player_index:
 		is_swap_focused = true
 		swap_focused.emit(null)
-	
-	mpc.online_connected = true
 
 func _on_swap_changed(new, old):
 	var new_focus = mpc.players.get_player_by_index(new)
@@ -90,6 +90,9 @@ func translate_action(origin_action: StringName) -> StringName:
 			var events = InputMap.action_get_events(origin_action)
 		
 			for e in events:
+				if not (e is InputEventJoypadButton or e is InputEventJoypadMotion):
+					continue
+				
 				var nevent = e.duplicate(true)
 				nevent.device = player_index
 				
@@ -113,11 +116,13 @@ func _get_handshake_data():
 @rpc("any_peer")
 func _recv_handshake_data(hs):
 	handshake_data = hs
-	handshake_ready.emit(handshake_data)
+	_on_handshake_ready()
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta):
-	pass
+func _on_handshake_ready():
+	if handshake_data.keys().has("_net_internal"):
+		if handshake_data._net_internal.keys().has("auth_data"):
+			auth_data = handshake_data._net_internal.auth_data
+	handshake_ready.emit(handshake_data)
 
 func _check_if_net_from_id(id):
 	if mpc.mode != mpc.PlayMode.Online:
@@ -127,7 +132,7 @@ func _check_if_net_from_id(id):
 @rpc("authority", "call_local")
 func _send_handshake_data(data):
 	handshake_data = data
-	handshake_ready.emit(data)
+	_on_handshake_ready()
 
 @rpc("any_peer", "call_local")
 func _internal_ping(server_time: float):
@@ -144,10 +149,11 @@ func _internal_ping(server_time: float):
 	
 	if not is_ready:
 		if _initcount < 1:
+			# Connnection Ready!
 			is_ready = true
 			player_ready.emit()
 			
-			mpc.connected_to_server.emit(self)
+			mpc._on_local_player_ready()
 			
 			rpc("_send_handshake_data", handshake_data)
 		else:
@@ -164,7 +170,7 @@ func disconnect_player():
 
 ## Kick the player, Server only.
 func kick(reason: String = ""):
-	rpc_id(1, "_net_kick", reason)
+	rpc_id(player_id, "_net_kick", reason)
 
 ## Respawn player node, Server only.
 func respawn_node():
@@ -213,7 +219,8 @@ func _net_spawn_node():
 		var packed_load = load(player_node_resource_path)
 		var pscene = packed_load.instantiate()
 		
-		pscene.set_multiplayer_authority(player_id)
+		if mpc.assign_client_authority:
+			pscene.set_multiplayer_authority(player_id, true)
 		
 		add_child(pscene, true)
 		

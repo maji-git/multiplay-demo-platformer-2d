@@ -1,0 +1,22 @@
+{
+	"title": "2D Platformer Demo",
+	"author": "maji",
+	"category_id": "4",
+	"godot_version": "4.2",
+	"mpc_version": "1.0.0",
+	"support_level": "testing",
+	"cost": "MIT",
+	"version": "1",
+	"version_string": "1",
+	"icon_url": "https://mpc.himaji.xyz/docs/community/demos/assets/plat-2d.png",
+	"description": "2D Platformer made with MultiPlay Core.",
+	"download_branch": "master",
+	"previews": [
+		{
+			"preview_id": "1",
+			"type": "image",
+			"link": "https://mpc.himaji.xyz/docs/community/demos/assets/plat-2d.png",
+			"thumbnail": "https://mpc.himaji.xyz/docs/community/demos/assets/plat-2d.png"
+		}
+	]
+}
